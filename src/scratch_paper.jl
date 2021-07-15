@@ -28,6 +28,28 @@ throw(DomainError("pos1 must be inside the circle and pos2 must be outside the c
     end
 end
 
+function rslope(posC)
+    return posC[2]/posC[1]
+end
+
+function perpslope(m)
+    return -1/m
+end
+
+function solve(m1,m2,x1,y1) #slope of radius, slope of perpendicular, point on perpendicular line (x and y)
+    A = [-m1 1;-m2 1]
+    b = [0, y1 - m2*x1]
+    temp = A\b
+    return SA[temp[1],temp[2]]
+end
+
+function posFinal(pos1,posM)
+    deltax = posM[1] - pos1[1]
+    deltay = posM[2] - pos1[2]
+    return SA[posM[1] + deltax, posM[2] + deltay]
+end
+
+#=
 function circleslope(pos1)              #finds the slope of a circle at a point
     return -pos1[1]/pos1[2]
 end
@@ -60,6 +82,7 @@ function finallocation(pos1,pos2,r)     #currently broken-tries to find where a 
         return posFinalB
     end
 end 
+=#
 
 using Test
 
@@ -68,8 +91,12 @@ using Test
     @test midpoint(SA[1,1],SA[3,3]) == SA[2,2]
     @test distance(SA[1,1],SA[2,1]) == 1
     @test isapprox(circleintersect(SA[1,0], SA[7,0], 2),SA[2,0])
-    @test circleslope(SA[1,2]) == -0.5 
-    @test angleofincidence(SA[1,1], SA[3,3], 2) == 90π/180
-    @test isapprox(returnslope(SA[1,1], SA[3,3], 2), 1)
-    #I don't know how to test final location
+#   @test circleslope(SA[1,2]) == -0.5 
+#   @test angleofincidence(SA[1,1], SA[3,3], 2) == 90π/180
+#   @test isapprox(returnslope(SA[1,1], SA[3,3], 2), 1)
+#   I don't know how to test final location
+    @test rslope(SA[2,3]) == 3/2
+    @test perpslope(3) == -1/3
+    @test solve(1,-2,0,3) == SA[1,1]
+    @test posFinal(SA[1,2],SA[1.5,1.5]) == SA[2,1]
 end
