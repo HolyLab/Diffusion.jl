@@ -18,5 +18,9 @@ using StaticArrays
         @test reflect_boundary(pt, rbound) ≈ (r <= rbound ? pt : SA[rreflect*cos(θ), rreflect*sin(θ)])
     end
     
+    @test length(simmolreflect(4, SA[0.,0.], 3)) == 5
+    @test typeof(simmolreflect(4, SA[1.,1.], 4)) == Vector{SVector{2, Float64}}
+    @test length(simmolabsorb(4, SA[0.,0.], 3)) <= 5
+    @test typeof(simmolabsorb(4, SA[1.,1.], 4)) == Vector{SVector{2, Float64}}
 end
 
