@@ -24,8 +24,8 @@ using StaticArrays
     @test length(simmolabsorb(1, 4, SA[0.,0.], 3)) <= 5
     @test typeof(simmolabsorb(1, 4, SA[1.,1.], 4)) == Vector{SVector{2, Float64}}
     @test length(nmolreflect(1, 4, SA[1., 1.], 3, 100)) == 100
-    @test typeof(nmolreflect(1, 4, SA[1., 1.], 3, 100)) == Vector{Any}
+    @test typeof(nmolreflect(1, 4, SA[1., 1.], 3, 100)) == Vector{Vector{typeof(SA[1.,1.])}}
     @test length(nmolabsorb(1, 4, SA[1., 1.], 3, 100)) == 100
-    @test typeof(nmolabsorb(1, 4, SA[1., 1.], 3, 100)) == Vector{Any}
+    @test typeof(nmolabsorb(1, 4, SA[1., 1.], 3, 100)) == Vector{Vector{typeof(SA[1.,1.])}}
 end
 
