@@ -1,18 +1,12 @@
 using StaticArrays
 
 function topolar(pos)
-    if pos[1] >= 0 && pos[2] >= 0
-        theta = atan(pos[2]/pos[1])
-    elseif pos[1] >=0 && pos[2] <= 0
-        theta = atan(pos[2]/pos[1]) + 2π
-    else
-        theta = atan(pos[2]/pos[1]) + π
-    end
+    theta = atan(pos[2]/pos[1])
     r = sqrt(sum(abs2, pos))
-    return SA[r,theta]
+    return Polar(r,theta)
 end
 
-function tocart(pos)
+function tocart(pos::Polar)
     x = pos[1]*cos(pos[2])
     y = pos[1]*sin(pos[2])
     return SA[x,y] 

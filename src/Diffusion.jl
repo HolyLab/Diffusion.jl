@@ -1,5 +1,6 @@
 module Diffusion
 using StaticArrays 
+using CoordinateTransformations 
 
 export absorb_boundary
 export reflect_boundary 
@@ -92,7 +93,7 @@ function simmolabsorb(σ, steps, pos, r) #simmol under absorbing boundary condit
 end
 
 function nmolreflect(σ, steps, pos, r, molecules) #simulates multiple molecules at once-reflective
-    molhistories = []
+    molhistories = Vector{typeof(pos)}[]
     for x in 1:molecules
         push!(molhistories, simmolreflect(σ, steps,pos,r))
     end
@@ -100,7 +101,7 @@ function nmolreflect(σ, steps, pos, r, molecules) #simulates multiple molecules
 end
 
 function nmolabsorb(σ, steps, pos, r, molecules) #simulates multiple molecules at once-absorbing
-    molhistories = []
+    molhistories = Vector{typeof(pos)}[]
     for x in 1:molecules
         push!(molhistories, simmolabsorb(σ, steps,pos,r))
     end
