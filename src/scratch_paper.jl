@@ -1,0 +1,153 @@
+using StaticArrays
+
+function topolar(pos)
+    theta = atan(pos[2]/pos[1])
+    r = sqrt(sum(abs2, pos))
+    return Polar(r,theta)
+end
+
+function tocart(pos::Polar)
+    x = pos[1]*cos(pos[2])
+    y = pos[1]*sin(pos[2])
+    return SA[x,y] 
+end
+
+function reflect(pos,r)
+    pos1 = topolar(pos)
+    dist = pos1[1] - r
+    pos2 = SA[r - dist,pos1[2]]
+    posf = tocart(pos2)
+    return posf
+end
+
+#=
+function slope(pos1,pos2)               #finds the slope between two points
+    return (pos1[2]-pos2[2])/(pos1[1]-pos2[1])
+end
+
+function midpoint(pos1,pos2)            #finds the midpoint between two points
+    x = (pos1[1]+pos2[1])/2
+    y = (pos1[2]+pos2[2])/2
+    return SA[x,y]
+ end
+
+function distance(pos1,pos2)            #finds the distance between two points
+    return ((pos2[1]-pos1[1])^2+(pos2[2]-pos1[2])^2)^(1/2)
+end
+
+function circleintersect(pos1,pos2,r)   #estimates the intersection between the line formed by two points and a circle of radius r
+    if(!(((pos1[1]^2)+(pos1[2]^2))^(1/2) < r) || !(((pos2[1]^2)+(pos2[2]^2))^(1/2) > r))
+throw(DomainError("pos1 must be inside the circle and pos2 must be outside the circle"))
+    end
+    mp = midpoint(pos1,pos2)
+    if(isapprox(((pos1[1]^2)+(pos1[2]^2))^(1/2),r))
+        return pos1
+    elseif(((mp[1]^2)+(mp[2]^2))^(1/2) < r) 
+        circleintersect(mp, pos2, r)
+    else 
+        circleintersect(pos1, mp, r)
+    end
+end
+
+function slope(pos1,pos2)               #finds the slope between two points
+    return (pos1[2]-pos2[2])/(pos1[1]-pos2[1])
+end
+
+function midpoint(pos1,pos2)            #finds the midpoint between two points
+    x = (pos1[1]+pos2[1])/2
+    y = (pos1[2]+pos2[2])/2
+    return SA[x,y]
+ end
+
+function circleintersect(pos1,pos2,r)   #estimates the intersection between the line formed by two points and a circle of radius r
+    mp = midpoint(pos1,pos2)
+    if(isapprox(((pos1[1]^2)+(pos1[2]^2))^(1/2),r))
+        return pos1
+    elseif(((mp[1]^2)+(mp[2]^2))^(1/2) < r) 
+        circleintersect(mp, pos2, r)
+    else 
+        circleintersect(pos1, mp, r)
+    end
+end
+
+function rslope(posC)
+    return posC[2]/posC[1]
+end
+
+function perpslope(m)
+    return -1/m
+end
+
+function solve(m1,m2,x1,y1) #slope of radius, slope of perpendicular, point on perpendicular line (x and y)
+    A = [-m1 1;-m2 1]
+    b = [0, y1 - m2*x1]
+    temp = A\b
+    return SA[temp[1],temp[2]]
+end
+
+function posFinal(pos1,posM)
+    deltax = posM[1] - pos1[1]
+    deltay = posM[2] - pos1[2]
+    return SA[posM[1] + deltax, posM[2] + deltay]
+end
+
+#=
+function circleslope(pos1)              #finds the slope of a circle at a point
+    return -pos1[1]/pos1[2]
+end
+
+function angleofincidence(pos1,pos2,r)  #finds the angle of incidence of the line between pos1 and pos 2 as it reflects of a circle with radius r
+    posC = circleintersect(pos1,pos2,r)
+    m1 = slope(pos1,pos2)
+    m2 = circleslope(posC)
+    return atan((m1-m2)/(1+m1*m2))
+end
+
+function returnslope(pos1,pos2,r)       #finds the slope of the line between pos1 and pos 2 after reflection on a circle with radius r
+    theta = angleofincidence(pos1,pos2,r) 
+    posC = circleintersect(pos1, pos2, r)
+    m2 = circleslope(posC)
+    return (tan(-theta)+m2)/(1-tan(-theta)*m2)
+end
+
+function finallocation(pos1,pos2,r)     #currently broken-tries to find where a particle moving from pos1 to pos2 would reflect to after hitting a circle with radius r
+    m = returnslope(pos1,pos2,r)
+    posC = circleintersect(pos1,pos2,r)
+    dist = distance(posC,pos2)
+    posTemp1 = SA[posC[1] + 100000, posC[2] + 100000*m]
+    posFinalA = circleintersect(posC, posTemp1, dist)       #the broken part is here-circle intersect uses a circle centered on 0, I need a circle centered on posC
+    posTemp2 = SA[posC[1] - 100000, posC[2] - 100000*m]
+    posFinalB = circleintersect(posC, posTemp2, dist)
+    if(((posFinalA[1]^2)+(posFinalA[2]^2))^(1/2) < r)
+        return posFinalA
+    else
+        return posFinalB
+    end
+end 
+=#
+=#
+using Test
+
+@testset "Diffusion.jl" begin
+#   @test slope(SA[1,2],SA[3,4]) == 1
+#   @test midpoint(SA[1,1],SA[3,3]) == SA[2,2]
+#   @test distance(SA[1,1],SA[2,1]) == 1
+#   @test isapprox(circleintersect(SA[1,0], SA[7,0], 2),SA[2,0])
+#   @test circleslope(SA[1,2]) == -0.5 
+#   @test angleofincidence(SA[1,1], SA[3,3], 2) == 90π/180
+#   @test isapprox(returnslope(SA[1,1], SA[3,3], 2), 1)
+#   I don't know how to test final location
+#   @test rslope(SA[2,3]) == 3/2
+#   @test perpslope(3) == -1/3
+#   @test solve(1,-2,0,3) == SA[1,1]
+#   @test posFinal(SA[1,2],SA[1.5,1.5]) == SA[2,1]
+#   @test topolar(SA[3,4]) == SA[5, 0.93]
+#   @test topolar(SA[-12,-5]) == SA[13, 3.54]
+#   @test topolar(SA[-3,10]) == SA[10.4, 1.86]
+#   @test topolar(SA[5,-8]) == SA[9.4, 5.27]
+#   @test tocart(SA[5, 0.93]) == SA[3,4]
+#   @test tocart(SA[13, 3.54]) == SA[-12,-5]
+#   @test tocart(SA[10.4, 1.86]) == SA[-3,10]
+#   @test tocart(SA[9.4, 5.27]) == SA[5,-8]
+    @test reflect(SA[4,4], sqrt(18)) == SA[2,2]
+end
