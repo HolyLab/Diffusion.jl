@@ -29,13 +29,16 @@ using StaticArrays
     @test typeof(nmolabsorb(1, 4, SA[1., 1.], 3, 100)) == Vector{Vector{typeof(SA[1.,1.])}}
 
     #tests for analysis
-    variance = molvarbytime(5, 10, SA[0., 0.], 50, 1000, "reflect")
+    trial = nmolreflect(5, 10, SA[0., 0.], 50, 10000)
+    variance = molvarbytime(trial)
     @test isapprox(variance[2], SA[25., 25.], atol = 1) 
-    meanposition = molavgbytime(5, 500, SA[15., 15.], 50, 1000, "reflect")
+    trial = nmolreflect(5, 500, SA[15., 15.], 50, 1000)
+    meanposition = molavgbytime(trial)
     @test meanposition[length(meanposition)] < meanposition[1]
     @test isapprox(meanposition[length(meanposition)], SA[0., 0.], atol = 1)
-    trial1 = nmolabsorb(1, 250, SA[0., 0.], 5, 100)
-    trial2 = nmolabsorb(1, 250, SA[2., 2.], 5, 100)
+    trial1 = nmolabsorb(1, 250, SA[0., 0.], 5, 1000)
+    trial2 = nmolabsorb(1, 250, SA[2., 2.], 5, 1000)
     @test maximum(molpathlengths(trial1)) > maximum(molpathlengths(trial2))
+    
 end
 

@@ -1,6 +1,7 @@
 module Diffusion
 using StaticArrays 
 using CoordinateTransformations 
+using Statistics
 
 export absorb_boundary
 export reflect_boundary 
@@ -114,92 +115,71 @@ end
 
 ### Analysis ###
  
-function molremaining(σ, steps, pos, r, molecules, boundary)
-    if boundary == "absorb"
-        trial = nmolabsorb(σ, steps, pos, r, molecules)
-    elseif boundary == "reflect"
-        trial = nmolreflect(σ, steps, pos, r, molecules)
-    else
-        throw(DomainError("Please specify boudary condition as 'absorb' or 'reflect'"))
-    end
+function molremaining(trial)
     lengths = molpathlengths(trial)
     return percentremaining(lengths)
-    end
+end
     
-    function molpathlengths(trial) #input the molhistories given my nmolreflect or nmolabsorb
-    lengthsofmolpaths = []         #outputs a vector showing the lengths of each molecules' path
-    for x in 1:length(trial)
-        push!(lengthsofmolpaths, length(trial[x]))
+function molpathlengths(trial) #input the molhistories given my nmolreflect or nmolabsorb
+    lengthsofmolpaths = Int[]         #outputs a vector showing the lengths of each molecules' path
+    for i in 1:length(trial)
+        push!(lengthsofmolpaths, length(trial[i]))
     end
     return lengthsofmolpaths
-    end
+end
     
     
-    function numberremaining(lengthsofmolpaths) #input a vector containing the length of each molecules path
-        numberremain = []                       #out puts a vector containing the number of molecules remaining each time step
-            for x in 1:maximum(lengthsofmolpaths)
-                number = 0.0
-                for y in 1:length(lengthsofmolpaths)
-                    if lengthsofmolpaths[y] >= x 
-                        number = number + 1
-                    end
+function numberremaining(lengthsofmolpaths) #input a vector containing the length of each molecules path
+    numberremain = Int[]                       #out puts a vector containing the number of molecules remaining each time step
+        for x in 1:maximum(lengthsofmolpaths)
+            number = 0.0
+            for y in 1:length(lengthsofmolpaths)
+                if lengthsofmolpaths[y] >= x 
+                    number = number + 1
                 end
-                push!(numberremain, number)
             end
-        return numberremain
-    end
+            push!(numberremain, number)
+        end
+    return numberremain
+end
     
-    function percentremaining(lengthsofmolpaths)                                   #input a vector containing the length of each molecules path
+function percentremaining(lengthsofmolpaths)                                   #input a vector containing the length of each molecules path
     percentremain = numberremaining(lengthsofmolpaths)/length(lengthsofmolpaths)   #out puts a vector containing the percent of molecules remaining each time step 
     return percentremain
-    end
+end
     
     #average and variance of position of all remaining molecules as a function of time. Input simulation specification, output vector of means or variances by time step
     
-    function molavgbytime(σ, steps, pos, r, molecules, boundary) 
-        if boundary == "absorb"
-            trial = nmolabsorb(σ, steps, pos, r, molecules)
-        elseif boundary == "reflect"
-            trial = nmolreflect(σ, steps, pos, r, molecules)
-        else
-            throw(DomainError("Please specify boudary condition as 'absorb' or 'reflect'"))
+function molavgbytime(trial) 
+    lengths = molpathlengths(trial)
+    means = []
+    for row in 1:maximum(lengths)
+        set = filter((x) -> length(x) >= row, trial)
+        setrow = []
+        for z in 1:length(set)
+            push!(setrow, set[z][row])
         end
-        lengths = molpathlengths(trial)
-        means = []
-        for row in 1:maximum(lengths)
-            set = filter((x) -> length(x) >= row, trial)
-            setrow = []
-            for z in 1:length(set)
-                push!(setrow, set[z][row])
-            end
-            avg = mean(setrow)
-            push!(means, avg)
-        end
-        return means
+        avg = mean(setrow)
+        push!(means, avg)
     end
+    return means
+end
     
     
-    function molvarbytime(σ, steps, pos, r, molecules, boundary) 
-        if boundary == "absorb"
-            trial = nmolabsorb(σ, steps, pos, r, molecules)
-        elseif boundary == "reflect"
-            trial = nmolreflect(σ, steps, pos, r, molecules)
-        else
-            throw(DomainError("Please specify boudary condition as 'absorb' or 'reflect'"))
+function molvarbytime(trial) 
+    lengths = molpathlengths(trial)
+    vars = []
+    for row in 1:maximum(lengths)
+        set = filter((x) -> length(x) >= row, trial)
+        setrow = []
+        for z in 1:length(set)
+            push!(setrow, set[z][row])
         end
-        lengths = molpathlengths(trial)
-        vars = []
-        for row in 1:maximum(lengths)
-            set = filter((x) -> length(x) >= row, trial)
-            setrow = []
-            for z in 1:length(set)
-                push!(setrow, set[z][row])
-            end
-            variance = var(setrow)
-            push!(vars, variance)
-        end
-        return vars
+        variance = var(setrow)
+        push!(vars, variance)
     end
+    return vars
+end
     
 
 end
