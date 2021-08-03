@@ -31,14 +31,18 @@ using StaticArrays
     #tests for analysis
     trial = nmolreflect(5, 10, SA[0., 0.], 50, 10000)
     variance = molvarbytime(trial)
-    @test isapprox(variance[2], SA[25., 25.], atol = 1) 
+    @test isapprox(variance[2], SA[25., 25.], atol = 3) 
     trial = nmolreflect(5, 500, SA[15., 15.], 50, 1000)
     meanposition = molavgbytime(trial)
     @test meanposition[length(meanposition)] < meanposition[1]
-    @test isapprox(meanposition[length(meanposition)], SA[0., 0.], atol = 1)
+    @test isapprox(meanposition[length(meanposition)], SA[0., 0.], atol = 3)
     trial1 = nmolabsorb(1, 250, SA[0., 0.], 5, 1000)
     trial2 = nmolabsorb(1, 250, SA[2., 2.], 5, 1000)
     @test maximum(molpathlengths(trial1)) > maximum(molpathlengths(trial2))
-    
+    trial = nmolreflect(5, 10, SA[0., 0.], 15, 10)
+    avgs = molavgbytime(trial)
+    for i in 1:length(avgs)
+        @test sum(abs2, avgs[i]) <= 15
+    end
 end
 

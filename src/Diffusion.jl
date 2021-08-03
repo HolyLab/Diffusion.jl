@@ -132,7 +132,7 @@ end
 function numberremaining(lengthsofmolpaths) #input a vector containing the length of each molecules path
     numberremain = Int[]                       #out puts a vector containing the number of molecules remaining each time step
         for x in 1:maximum(lengthsofmolpaths)
-            number = 0.0
+            number = 0
             for y in 1:length(lengthsofmolpaths)
                 if lengthsofmolpaths[y] >= x 
                     number = number + 1
