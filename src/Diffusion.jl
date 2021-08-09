@@ -75,6 +75,7 @@ end
 
 function simmolreflect(σ, steps, pos, r) #simmol under refelctive boundary conditions 
     molhistory = [pos]
+    sizehint!(molhistory, steps+1)
     for x in 1:steps
         pos = movemol(pos, σ)
         pos = reflect_boundary(pos, r)
@@ -85,6 +86,7 @@ end
 
 function simmolabsorb(σ, steps, pos, r) #simmol under absorbing boundary conditions
     molhistory = [pos]
+    sizehint!(molhistory, steps+1)
     for x in 1:steps
         pos = movemol(pos, σ)
         pos = absorb_boundary(pos, r)
