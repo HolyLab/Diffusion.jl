@@ -1,6 +1,7 @@
 module Diffusion
 using StaticArrays 
 using CoordinateTransformations 
+using Statistics
 
 export absorb_boundary
 export reflect_boundary 
@@ -8,6 +9,10 @@ export simmolreflect
 export simmolabsorb
 export nmolreflect
 export nmolabsorb
+export molpathlengths
+export numberremaining
+export molavgbytime
+export molvarbytime
 
 ###    boundary conditions     ###
 
@@ -20,13 +25,13 @@ function absorb_boundary(pos,r) #models an absorbing boundary-pos inside the bou
 end
 
 function topolar(pos) #turns a cartesian coordinate into a polar coordinate 
-    if pos[1] >= 0 && pos[2] >= 0
-        theta = atan(pos[2]/pos[1])
-    elseif pos[1] >=0 && pos[2] <= 0
-        theta = atan(pos[2]/pos[1]) + 2π
-    else
-        theta = atan(pos[2]/pos[1]) + π
-    end
+    #if pos[1] >= 0 && pos[2] >= 0
+        theta = atan(pos[2], pos[1])
+    #elseif pos[1] >=0 && pos[2] <= 0
+    #    theta = atan(pos[2]/pos[1]) + 2π
+    #else
+    #    theta = atan(pos[2]/pos[1]) + π
+    #end
     r = sqrt(sum(abs2, pos))
     return SA[r,theta]
 end
@@ -70,6 +75,7 @@ end
 
 function simmolreflect(σ, steps, pos, r) #simmol under refelctive boundary conditions 
     molhistory = [pos]
+    sizehint!(molhistory, steps+1)
     for x in 1:steps
         pos = movemol(pos, σ)
         pos = reflect_boundary(pos, r)
@@ -80,6 +86,7 @@ end
 
 function simmolabsorb(σ, steps, pos, r) #simmol under absorbing boundary conditions
     molhistory = [pos]
+    sizehint!(molhistory, steps+1)
     for x in 1:steps
         pos = movemol(pos, σ)
         pos = absorb_boundary(pos, r)
@@ -107,5 +114,74 @@ function nmolabsorb(σ, steps, pos, r, molecules) #simulates multiple molecules 
     end
     return molhistories
 end
+
+### Analysis ###
+ 
+function molremaining(trial)
+    lengths = molpathlengths(trial)
+    return percentremaining(lengths)
+end
+    
+function molpathlengths(trial) #input the molhistories given my nmolreflect or nmolabsorb
+    lengthsofmolpaths = Int[]         #outputs a vector showing the lengths of each molecules' path
+    for i in 1:length(trial)
+        push!(lengthsofmolpaths, length(trial[i]))
+    end
+    return lengthsofmolpaths
+end
+    
+    
+function numberremaining(lengthsofmolpaths) #input a vector containing the length of each molecules path
+    numberremain = Int[]                       #out puts a vector containing the number of molecules remaining each time step
+        for x in 1:maximum(lengthsofmolpaths)
+            number = 0
+            for y in 1:length(lengthsofmolpaths)
+                if lengthsofmolpaths[y] >= x 
+                    number = number + 1
+                end
+            end
+            push!(numberremain, number)
+        end
+    return numberremain
+end
+    
+function percentremaining(lengthsofmolpaths)                                   #input a vector containing the length of each molecules path
+    percentremain = numberremaining(lengthsofmolpaths)/length(lengthsofmolpaths)   #out puts a vector containing the percent of molecules remaining each time step 
+    return percentremain
+end
+    
+    #average and variance of position of all remaining molecules as a function of time. Input simulation specification, output vector of means or variances by time step
+    
+function molavgbytime(trial) 
+    lengths = molpathlengths(trial)
+    means = []
+    for row in 1:maximum(lengths)
+        set = filter((x) -> length(x) >= row, trial)
+        setrow = []
+        for z in 1:length(set)
+            push!(setrow, set[z][row])
+        end
+        avg = mean(setrow)
+        push!(means, avg)
+    end
+    return means
+end
+    
+    
+function molvarbytime(trial) 
+    lengths = molpathlengths(trial)
+    vars = []
+    for row in 1:maximum(lengths)
+        set = filter((x) -> length(x) >= row, trial)
+        setrow = []
+        for z in 1:length(set)
+            push!(setrow, set[z][row])
+        end
+        variance = var(setrow)
+        push!(vars, variance)
+    end
+    return vars
+end
+    
 
 end
