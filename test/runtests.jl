@@ -1,23 +1,24 @@
 using Diffusion
 using Test
 using StaticArrays
+using Statistics
 
 @testset "Diffusion.jl" begin
     # tests for absorbing and reflective boundaries
     @test absorb_boundary(SA[3,4],6) == SA[3,4]
     @test absorb_boundary(SA[3,4],5) === nothing
-    @test absorb_boundary(SA[3,4],4) === nothing 
+    @test absorb_boundary(SA[3,4],4) === nothing
     @test reflect_boundary(SA[3,4],6) == SA[3,4]
     @test reflect_boundary(SA[3,4],5) ≈ SA[3,4]
-    @test reflect_boundary(SA[4,4],sqrt(18)) ≈ SA[2,2] 
-    
+    @test reflect_boundary(SA[4,4],sqrt(18)) ≈ SA[2,2]
+
     for r in 0.5:0.1:1.2, θ in 0:π/8:2π
         pt = SA[r*cos(θ), r*sin(θ)]
         rbound = 0.8
         rreflect = 2*rbound - r
         @test reflect_boundary(pt, rbound) ≈ (r <= rbound ? pt : SA[rreflect*cos(θ), rreflect*sin(θ)])
     end
-    
+
     #tests for simulating the movement of molecules
     @test length(simmolreflect(1, 4, SA[0.,0.], 3)) == 5
     @test typeof(simmolreflect(1, 4, SA[1.,1.], 4)) == Vector{SVector{2, Float64}}
@@ -31,18 +32,20 @@ using StaticArrays
     #tests for analysis
     trial = nmolreflect(5, 10, SA[0., 0.], 50, 10000)
     variance = molvarbytime(trial)
-    @test isapprox(variance[2], SA[25., 25.], atol = 3) 
+    @test isapprox(variance[2], SA[25., 25.], atol = 3)
     trial = nmolreflect(5, 500, SA[15., 15.], 50, 1000)
     meanposition = molavgbytime(trial)
     @test meanposition[length(meanposition)] < meanposition[1]
     @test isapprox(meanposition[length(meanposition)], SA[0., 0.], atol = 3)
     trial1 = nmolabsorb(1, 250, SA[0., 0.], 5, 1000)
     trial2 = nmolabsorb(1, 250, SA[2., 2.], 5, 1000)
-    @test maximum(molpathlengths(trial1)) > maximum(molpathlengths(trial2))
-    trial = nmolreflect(5, 10, SA[0., 0.], 15, 10)
+    @test quantile(molpathlengths(trial1), 0.9) > quantile(molpathlengths(trial2), 0.9)
+    trial = nmolreflect(5, 10, SA[0., 0.], 15, 100)
     avgs = molavgbytime(trial)
+    nok = 0
     for i in 1:length(avgs)
-        @test sum(abs2, avgs[i]) <= 15
+        nok += sum(abs2, avgs[i]) <= 15
     end
+    @test nok > 0.8*length(avgs)
 end
 
